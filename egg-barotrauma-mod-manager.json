@@ -1,0 +1,193 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2024-10-11T18:51:33+03:00",
+    "name": "Barotrauma ModManager",
+    "author": "admin@lighthouse-servers.com",
+    "description": "Barotrauma is a 2D co-op survival horror submarine simulator, inspired by games like FTL: Faster Than Light, Rimworld, Dwarf Fortress and Space Station 13. It\u00e2\u20ac\u2122s a Sci-Fi game that combines ragdoll physics and alien sea monsters with teamwork and existential fear.\r\n\r\nThis image also installs ModManager and other stuff",
+    "features": null,
+    "docker_images": {
+        "ghcr.io\/alex-noble-1337\/trusted-seas-barotrauma-pterodactyl:main": "ghcr.io\/alex-noble-1337\/trusted-seas-barotrauma-pterodactyl:main",
+        "ghcr.io\/lighthouse-servers\/btpterodactyldockerimage:master": "ghcr.io\/lighthouse-servers\/btpterodactyldockerimage:master"
+    },
+    "file_denylist": [],
+    "startup": ".\/mod_manager.sh && .\/custom_script.sh && export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:$PWD\/linux64\" && port={{SERVER_PORT}} && .\/DedicatedServer -port $port -queryport $(( $port + 1 ))",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Server started\"\r\n}",
+        "logs": "{\r\n    \"custom\": false,\r\n    \"location\": \"latest.log\"\r\n}",
+        "stop": "exit"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# steamcmd Base Installation Script## Server Files: \/mnt\/server\r\n# Image to install with is 'debian:buster-slim'\r\napt update\r\napt-get install software-properties-common -y\r\nadd-apt-repository multiverse\r\ndpkg --add-architecture i386\r\napt -y update\r\napt -y --no-install-recommends install curl wget unzip ca-certificates lib32gcc-s1\r\n\r\n## just in case someone removed the defaults.\r\nif [[ \"${STEAM_USER}\" == \"\" ]] || [[ \"${STEAM_PASS}\" == \"\" ]]; then\r\n    echo -e \"steam user is not set.\\\\\\\\n\"\r\n    echo -e \"Using anonymous user.\\\\\\\\n\"\r\n    STEAM_USER=anonymous\r\n    STEAM_PASS=\"\"\r\n    STEAM_AUTH=\"\"\r\nelse\r\n    echo -e \"user set to ${STEAM_USER}\"\r\nfi\r\n\r\n## download and install steamcmd\r\ncd \/tmp\r\nmkdir -p \/mnt\/server\/steamcmd\r\ncurl -sSL -o steamcmd.tar.gz https:\/\/steamcdn-a.akamaihd.net\/client\/installer\/steamcmd_linux.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/steamcmd\r\nmkdir -p \/mnt\/server\/steamapps # Fix steamcmd disk write error when this folder is missing\r\ncd \/mnt\/server\/steamcmd\r\n\r\n# SteamCMD fails otherwise for some reason, even running as root.\r\n# This is changed at the end of the install process anyways.\r\nchown -R root:root \/mnt\r\nexport HOME=\/mnt\/server\r\n\r\n## install game using steamcmd\r\n.\/steamcmd.sh +force_install_dir \/mnt\/server +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} $( [[ \"${WINDOWS_INSTALL}\" == \"1\" ]] && printf %s '+@sSteamCmdForcePlatformType windows' ) +app_update ${SRCDS_APPID} ${INSTALL_FLAGS} validate +quit ## other flags may be needed depending on install. looking at you cs 1.6\r\n\r\n## set up 32 bit libraries\r\nmkdir -p \/mnt\/server\/.steam\/sdk32\r\ncp -v linux32\/steamclient.so ..\/.steam\/sdk32\/steamclient.so\r\n\r\n## set up 64 bit libraries\r\nmkdir -p \/mnt\/server\/.steam\/sdk64\r\ncp -v linux64\/steamclient.so ..\/.steam\/sdk64\/steamclient.so",
+            "container": "ghcr.io\/parkervcp\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "SRCDS_APPID",
+            "description": "",
+            "env_variable": "SRCDS_APPID",
+            "default_value": "1026340",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "1 = on; 0 = off",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Name of the server",
+            "description": "Name of the Barotrauma server. Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_NAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Server name prefix",
+            "description": "Forced Barotrauma server name prefix.",
+            "env_variable": "SERVER_NAME_PREFIX",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Public server",
+            "description": "",
+            "env_variable": "SERVER_PUBLIC",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Can be passworded",
+            "description": "Forces the server to not be passworded if the value is 0",
+            "env_variable": "CAN_BE_PASSWORDED",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Server password",
+            "description": "Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Max players",
+            "description": "Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_MAXPLAYERS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Playstyle",
+            "description": "Possible values are: Casual|Serious|Rampage|Other\r\nWill use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_PLAYSTYLE",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Ban after wrong password",
+            "description": "Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_BANAFTERWRONGPASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Karma enabled",
+            "description": "Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_KARMA",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Karma preset",
+            "description": "Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_KARMAPRESET",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Server language",
+            "description": "Default is English. Will use the value in serversettings.xml if empty.",
+            "env_variable": "SERVER_LANGUAGE",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Steam collection",
+            "description": "Steam collection link of the mods of the server\r\nOrder of that collection matters\r\nBoth mods and collection must be Public or Unlisted",
+            "env_variable": "STEAM_COLLECTION",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Can be privated",
+            "description": "",
+            "env_variable": "CAN_BE_PRIVATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Remove mods",
+            "description": "Resets all your mods, turning your server to vanilla.",
+            "env_variable": "SERVER_REMOVE_MODS",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "boolean",
+            "field_type": "text"
+        }
+    ]
+}
