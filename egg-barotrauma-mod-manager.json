@@ -10,7 +10,7 @@
     "description": "Barotrauma is a 2D co-op survival horror submarine simulator, inspired by games like FTL: Faster Than Light, Rimworld, Dwarf Fortress and Space Station 13. It\u00e2\u20ac\u2122s a Sci-Fi game that combines ragdoll physics and alien sea monsters with teamwork and existential fear.\r\n\r\nThis image also installs ModManager and other stuff",
     "features": null,
     "docker_images": {
-        "ghcr.io\/alex-noble-1337\/trusted-seas-barotrauma-pterodactyl:main": "ghcr.io\/alex-noble-1337\/trusted-seas-barotrauma-pterodactyl:main",
+        "ghcr.io\/alex-noble-1337\/trusted-seas-barotrauma-pterodactyl:main": "ghcr.io\/areuawitchoflightning\/trusted-seas-barotrauma-pterodactyl:main",
         "ghcr.io\/lighthouse-servers\/btpterodactyldockerimage:master": "ghcr.io\/lighthouse-servers\/btpterodactyldockerimage:master"
     },
     "file_denylist": [],
